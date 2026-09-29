@@ -38,6 +38,7 @@ struct KeyboardShortcutsView: View {
                 Row(keys: "Tab", action: "Switch between tree and grid"),
                 Row(keys: "⌘R", action: "Refresh the current folder"),
                 Row(keys: "⌘+ / ⌘−", action: "Bigger / smaller thumbnails"),
+                Row(keys: "I / ⌘I", action: "Show / hide the info panel"),
                 Row(keys: "?", action: "Show this window")
             ])
         }

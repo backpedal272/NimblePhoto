@@ -117,6 +117,10 @@ struct ThumbnailGridView: View {
             onClassify(category, targets)
             return .handled
         }
+        if bare, press.characters == "i" {
+            settings.toggleInfoPanel()
+            return .handled
+        }
         if press.characters == "?" {
             openWindow(id: "shortcuts")
             return .handled

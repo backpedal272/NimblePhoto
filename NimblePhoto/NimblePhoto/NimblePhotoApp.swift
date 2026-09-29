@@ -48,6 +48,11 @@ struct NimblePhotoApp: App {
                 .keyboardShortcut("r", modifiers: [.command])
             }
             CommandGroup(after: .toolbar) {
+                Button(settings.isInfoPanelVisible ? "Hide Info" : "Show Info") {
+                    settings.toggleInfoPanel()
+                }
+                .keyboardShortcut("i", modifiers: [.command])
+
                 Button("Increase Thumbnail Size") {
                     settings.gridCellSize = min(Settings.gridCellSizeRange.upperBound, settings.gridCellSize + 20)
                 }

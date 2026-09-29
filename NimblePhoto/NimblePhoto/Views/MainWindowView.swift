@@ -60,13 +60,32 @@ struct MainWindowView: View {
                             )
                         }
                     }
-                }
-                .toolbar {
-                    ToolbarItem {
-                        FilterBarView()
+                    .toolbar {
+                        ToolbarItem {
+                            FilterBarView()
+                        }
+                        // Pushes the rest to the window's trailing edge (the
+                        // Liquid Glass toolbar otherwise packs items leading).
+                        if #available(macOS 26.0, *) {
+                            ToolbarSpacer(.flexible)
+                        }
+                        ToolbarItem(placement: .primaryAction) {
+                            gridSizeSlider
+                        }
+                        ToolbarItem(placement: .primaryAction) {
+                            Button {
+                                settings.toggleInfoPanel()
+                            } label: {
+                                Image(systemName: settings.isInfoPanelVisible ? "info.circle.fill" : "info.circle")
+                            }
+                            .help(settings.isInfoPanelVisible ? "Hide Info (⌘I)" : "Show Info (⌘I)")
+                        }
                     }
-                    ToolbarItem {
-                        gridSizeSlider
+                    // Beside the grid/viewer ZStack, so one panel (and its
+                    // open/closed state) serves both.
+                    .inspector(isPresented: infoPanelVisibility) {
+                        InfoPanelView()
+                            .inspectorColumnWidth(min: 240, ideal: 300, max: 480)
                     }
                 }
             }
@@ -102,6 +121,13 @@ struct MainWindowView: View {
         Binding(
             get: { settings.isSidebarVisible ? .all : .detailOnly },
             set: { settings.isSidebarVisible = $0 != .detailOnly }
+        )
+    }
+
+    private var infoPanelVisibility: Binding<Bool> {
+        Binding(
+            get: { settings.isInfoPanelVisible },
+            set: { settings.isInfoPanelVisible = $0 }
         )
     }
 

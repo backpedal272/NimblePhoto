@@ -8,6 +8,7 @@ import SwiftUI
 /// play back via AVKit instead of the zoomable image, autoplaying on open.
 struct FullSizeImageView: View {
     @Environment(AppState.self) private var appState
+    @Environment(Settings.self) private var settings
     @Environment(\.openWindow) private var openWindow
     let photos: [Photo]
     let thumbnailService: ThumbnailService
@@ -154,6 +155,11 @@ struct FullSizeImageView: View {
         }
         .onKeyPress(characters: CharacterSet(charactersIn: "+=")) { _ in zoom(by: 1.25); return .handled }
         .onKeyPress(characters: CharacterSet(charactersIn: "-_")) { _ in zoom(by: 0.8); return .handled }
+        .onKeyPress(characters: CharacterSet(charactersIn: "i")) { press in
+            guard press.modifiers.isDisjoint(with: [.command, .option, .control]) else { return .ignored }
+            settings.toggleInfoPanel()
+            return .handled
+        }
         .onKeyPress(characters: CharacterSet(charactersIn: "?")) { _ in
             openWindow(id: "shortcuts")
             return .handled
@@ -183,7 +189,7 @@ struct FullSizeImageView: View {
                 }
         )
         .toolbar {
-            ToolbarItemGroup {
+            ToolbarItemGroup(placement: .primaryAction) {
                 if currentPhoto?.isVideo != true {
                     Button {
                         absoluteScale = (absoluteScale == nil) ? 1.0 : nil
