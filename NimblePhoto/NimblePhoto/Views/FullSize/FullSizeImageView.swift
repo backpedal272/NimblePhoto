@@ -21,6 +21,15 @@ struct FullSizeImageView: View {
     @State private var loadedPhotoID: String?
     /// nil = fit-to-window; otherwise an absolute scale where 1.0 = 100%.
     @State private var absoluteScale: CGFloat?
+    /// Scale when the current pinch began; the pinch's magnification is
+    /// relative to it (nil when no pinch is in progress).
+    @State private var pinchBaseScale: CGFloat?
+    @State private var pinchBaseOffset: CGSize = .zero
+    /// Horizontal travel of the current two-finger swipe while the image is
+    /// fitted; `swipeDidNavigate` limits a swipe to one photo.
+    @State private var swipeTravel: CGFloat = 0
+    @State private var swipeDidNavigate = false
+    @State private var containerSize: CGSize = .zero
     /// Pan committed by finished drags; `activeDrag` is the in-flight
     /// gesture's translation on top of it, folded in on gesture end so a new
     /// drag continues from where the last one left off.
@@ -95,11 +104,20 @@ struct FullSizeImageView: View {
                     }
                 }
             }
-            // Fixed, fully opaque neutral grey (the semantic system greys can
-            // be translucent): nothing behind the viewer bleeds through, and
+            // Fixed, fully opaque mid grey (the semantic system greys can be
+            // translucent): nothing behind the viewer bleeds through, and
             // photos are judged against the same backdrop in light and dark
             // mode.
-            .background(Color(white: 0.22))
+            .background(Color(white: 0.46))
+            .contextMenu {
+                if let id = appState.highlightedPhotoID {
+                    PhotoContextMenu(targets: [id], onClassify: onClassify)
+                }
+            }
+            .onGeometryChange(for: CGSize.self, of: { $0.size }) { containerSize = $0 }
+            .background(
+                TrackpadEventMonitor(onScroll: handleScroll, onSmartMagnify: handleSmartMagnify)
+            )
             Divider()
             StatusBarView()
         }
@@ -141,11 +159,27 @@ struct FullSizeImageView: View {
             return .handled
         }
         .gesture(
-            MagnificationGesture()
+            MagnifyGesture()
                 .onChanged { value in
                     guard currentPhoto?.isVideo != true else { return }
-                    absoluteScale = (absoluteScale ?? 1.0) * value
-                    ensureFullResolution()
+                    // `magnification` is cumulative since the pinch began, so
+                    // apply it to the scale at that moment, not the live one
+                    // (which compounded every event and zoomed exponentially).
+                    if pinchBaseScale == nil {
+                        pinchBaseScale = currentScale
+                        pinchBaseOffset = dragOffset
+                    }
+                    setScale(
+                        (pinchBaseScale ?? currentScale) * value.magnification,
+                        anchor: value.startLocation,
+                        from: pinchBaseScale ?? currentScale,
+                        offset: pinchBaseOffset
+                    )
+                }
+                .onEnded { _ in
+                    pinchBaseScale = nil
+                    // Pinching back to (or below) fit returns to fit-to-window mode.
+                    if let absoluteScale, absoluteScale <= currentFitScale { resetView() }
                 }
         )
         .toolbar {
@@ -184,10 +218,88 @@ struct FullSizeImageView: View {
         return min(widthScale, heightScale, 1.0)
     }
 
+    /// Fit-to-window scale for the current image and viewer size.
+    private var currentFitScale: CGFloat {
+        guard let image else { return 1.0 }
+        return fitScale(for: image.size, in: containerSize)
+    }
+
+    /// The scale actually on screen, whether fitted or zoomed.
+    private var currentScale: CGFloat { absoluteScale ?? currentFitScale }
+
+    private static func clampScale(_ scale: CGFloat) -> CGFloat {
+        min(max(scale, 0.05), 8.0)
+    }
+
     private func zoom(by factor: CGFloat) {
-        let base = absoluteScale ?? 1.0
-        absoluteScale = min(max(base * factor, 0.05), 8.0)
-        ensureFullResolution()
+        setScale(currentScale * factor, anchor: nil, from: currentScale, offset: dragOffset)
+    }
+
+    /// Zooms so the image point under `anchor` (viewer coordinates, top-left
+    /// origin; nil = center) stays put, starting from `oldScale`/`offset`.
+    private func setScale(_ newScale: CGFloat, anchor: CGPoint?, from oldScale: CGFloat, offset: CGSize) {
+        let scale = Self.clampScale(newScale)
+        let ratio = scale / max(oldScale, 0.0001)
+        let center = CGPoint(x: containerSize.width / 2, y: containerSize.height / 2)
+        let a = anchor ?? center
+        // Vector from the image center to the anchor scales with the image.
+        let proposed = CGSize(
+            width: (a.x - center.x) - (a.x - center.x - offset.width) * ratio,
+            height: (a.y - center.y) - (a.y - center.y - offset.height) * ratio
+        )
+        absoluteScale = scale
+        if let image {
+            dragOffset = clampedOffset(proposed, imageSize: image.size, scale: scale, container: containerSize)
+        }
+        if scale > currentFitScale { ensureFullResolution() }
+    }
+
+    /// True when the whole image is visible, so there is nothing to pan.
+    private var imageFitsInView: Bool {
+        guard let image else { return true }
+        let scale = currentScale
+        return image.size.width * scale <= containerSize.width + 0.5
+            && image.size.height * scale <= containerSize.height + 0.5
+    }
+
+    /// Two-finger scroll: pans a zoomed image (momentum included); when the
+    /// image fits, a horizontal swipe goes to the previous/next photo.
+    private func handleScroll(_ event: TrackpadEventMonitor.ScrollEvent) -> Bool {
+        guard currentPhoto?.isVideo != true, let image else { return false }
+
+        if !imageFitsInView {
+            let proposed = CGSize(width: dragOffset.width + event.delta.width,
+                                  height: dragOffset.height + event.delta.height)
+            dragOffset = clampedOffset(proposed, imageSize: image.size, scale: currentScale, container: containerSize)
+            return true
+        }
+
+        // Swipe-to-navigate is trackpad only, and ignores the inertial tail
+        // so one flick moves exactly one photo.
+        guard event.isPrecise, !event.isMomentum else { return event.isMomentum }
+        if event.phase.contains(.began) {
+            swipeTravel = 0
+            swipeDidNavigate = false
+        }
+        swipeTravel += event.delta.width
+        if !swipeDidNavigate, abs(swipeTravel) > 60 {
+            swipeDidNavigate = true
+            // Content follows the fingers: pushing it left reveals the next photo.
+            step(by: swipeTravel < 0 ? 1 : -1)
+        }
+        return true
+    }
+
+    /// Two-finger double-tap: toggle between fit and actual size (or 2× for
+    /// images already shown at 100%), centered on the pointer.
+    private func handleSmartMagnify(_ location: CGPoint) {
+        guard currentPhoto?.isVideo != true, image != nil else { return }
+        if absoluteScale != nil {
+            resetView()
+        } else {
+            let target: CGFloat = currentFitScale < 1 ? 1.0 : 2.0
+            setScale(target, anchor: location, from: currentScale, offset: .zero)
+        }
     }
 
     /// Keeps the image at least partially anchored to the container: no
@@ -204,6 +316,7 @@ struct FullSizeImageView: View {
 
     private func resetView() {
         absoluteScale = nil
+        pinchBaseScale = nil
         dragOffset = .zero
         activeDrag = .zero
     }

@@ -72,6 +72,8 @@ struct MainWindowView: View {
             }
         }
         .background(WindowCloseTerminator())
+        // The icon already names the app; the toolbar title just takes space.
+        .toolbar(removing: .title)
         .task {
             if let root = rootFolderStore.rootURL {
                 await treeModel.setRoot(root)

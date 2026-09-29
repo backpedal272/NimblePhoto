@@ -43,20 +43,7 @@ struct ThumbnailGridView: View {
                                     onOpenFullSize()
                                 })
                                 .contextMenu {
-                                    ForEach(Category.allCases) { category in
-                                        Button {
-                                            onClassify(category, contextTargets(for: photo))
-                                        } label: {
-                                            Label(category.displayName, systemImage: category.symbolName)
-                                        }
-                                    }
-                                    Divider()
-                                    Button {
-                                        let urls = contextTargets(for: photo).map { URL(fileURLWithPath: $0) }
-                                        NSWorkspace.shared.activateFileViewerSelecting(urls)
-                                    } label: {
-                                        Label("Show in Finder", systemImage: "finder")
-                                    }
+                                    PhotoContextMenu(targets: contextTargets(for: photo), onClassify: onClassify)
                                 }
                         }
                     }
@@ -245,7 +232,7 @@ private struct ThumbnailCellView: View {
         VStack(spacing: 4) {
             ZStack {
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.nimbleBlue.opacity(0.08))
+                    .fill(Color.gray.opacity(0.15))
                 if let image {
                     Image(nsImage: image)
                         .resizable()
@@ -275,12 +262,12 @@ private struct ThumbnailCellView: View {
         }
         .padding(6)
         .background(
-            isSelected ? Color.nimbleBlue.opacity(0.2) : Color.clear,
+            isSelected ? Color.gray.opacity(0.25) : Color.clear,
             in: RoundedRectangle(cornerRadius: 8)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(Color.nimbleBlue, lineWidth: isHighlighted ? 2 : 0)
+                .strokeBorder(Color.gray, lineWidth: isHighlighted ? 2 : 0)
         )
         // Keyed on the same identity as the thumbnail cache (path + mtime +
         // size) so an in-place file edit reloads the cell, not just a new id.

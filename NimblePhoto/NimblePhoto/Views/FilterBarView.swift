@@ -38,6 +38,10 @@ struct FilterBarView: View {
                 }
             }
         }
+        // Matches the toolbar item's own vertical inset (measured on screen), so
+        // the "All" pill sits concentrically in the rounded toolbar background
+        // with equal top, bottom, and left gaps.
+        .padding(.horizontal, 7.5)
     }
 }
 
