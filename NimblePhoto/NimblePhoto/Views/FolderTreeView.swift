@@ -64,20 +64,20 @@ private struct FolderRowView: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "folder.fill")
-                    .foregroundStyle(isSelected ? Color.white : Color.accentColor)
+                    .foregroundStyle(isSelected ? Color.nimbleCream : Color.nimbleBlue)
                 Text(node.name)
-                    .foregroundStyle(isSelected ? Color.white : Color.primary)
+                    .foregroundStyle(isSelected ? Color.nimbleCream : Color.primary)
                 Spacer(minLength: 4)
                 Text("\(node.imageCount)")
                     .font(.caption)
                     .monospacedDigit()
-                    .foregroundStyle(isSelected ? Color.white.opacity(0.85) : Color.secondary)
+                    .foregroundStyle(isSelected ? Color.nimbleCream.opacity(0.85) : Color.secondary)
             }
             .padding(.vertical, 4)
             .padding(.horizontal, 8)
             .background(
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(isSelected ? Color.accentColor : Color.clear)
+                    .fill(isSelected ? Color.nimbleBlue : Color.clear)
             )
             .contentShape(Rectangle())
             .onTapGesture {

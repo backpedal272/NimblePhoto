@@ -36,6 +36,7 @@ struct NimblePhotoApp: App {
                 .environment(settings)
                 .environment(treeModel)
                 .environment(contentsModel)
+                .tint(.nimbleBlue)
         }
         .commands {
             CommandGroup(replacing: .newItem) {}
@@ -72,11 +73,13 @@ struct NimblePhotoApp: App {
             EmptyRootStateView(showButton: false)
                 .environment(rootFolderStore)
                 .frame(width: 600)
+                .tint(.nimbleBlue)
         }
         .windowResizability(.contentSize)
 
         Window("Keyboard Shortcuts", id: "shortcuts") {
             KeyboardShortcutsView()
+                .tint(.nimbleBlue)
         }
         .windowResizability(.contentSize)
 
@@ -84,6 +87,7 @@ struct NimblePhotoApp: App {
             CategorySettingsView()
                 .environment(rootFolderStore)
                 .environment(contentsModel)
+                .tint(.nimbleBlue)
         }
     }
 }

@@ -245,7 +245,7 @@ private struct ThumbnailCellView: View {
         VStack(spacing: 4) {
             ZStack {
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.secondary.opacity(0.1))
+                    .fill(Color.nimbleBlue.opacity(0.08))
                 if let image {
                     Image(nsImage: image)
                         .resizable()
@@ -275,12 +275,12 @@ private struct ThumbnailCellView: View {
         }
         .padding(6)
         .background(
-            isSelected ? Color.accentColor.opacity(0.22) : Color.clear,
+            isSelected ? Color.nimbleBlue.opacity(0.2) : Color.clear,
             in: RoundedRectangle(cornerRadius: 8)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(Color.accentColor, lineWidth: isHighlighted ? 2 : 0)
+                .strokeBorder(Color.nimbleBlue, lineWidth: isHighlighted ? 2 : 0)
         )
         // Keyed on the same identity as the thumbnail cache (path + mtime +
         // size) so an in-place file edit reloads the cell, not just a new id.

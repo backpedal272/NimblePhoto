@@ -23,14 +23,20 @@ struct StatusBarView: View {
         let _ = CategoryNamingTicker.shared.version
         HStack(spacing: 16) {
             if let message = appState.statusMessage {
-                Label(message, systemImage: "exclamationmark.triangle.fill")
-                    .foregroundStyle(.orange)
-                    .lineLimit(1)
+                // Orange is retired in the Nimble palette (style guide §2):
+                // the warning glyph carries the accent, the text stays primary.
+                Label {
+                    Text(message)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(Color.nimbleBlue)
+                }
+                .lineLimit(1)
             } else if let photo = highlightedPhoto {
                 if appState.selectedPhotoIDs.count > 1 {
                     Text("\(appState.selectedPhotoIDs.count) selected")
                         .fontWeight(.semibold)
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Color.nimbleBlue)
                 }
                 Text(photo.fileName).fontWeight(.medium)
 

@@ -239,9 +239,10 @@ struct EmptyRootStateView: View {
             Spacer()
 
             VStack(spacing: 16) {
-                Image(systemName: "photo.on.rectangle.angled")
-                    .font(.system(size: 56))
-                    .foregroundStyle(.secondary)
+                // The app icon is the brand mark; reuse it rather than an SF Symbol.
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .frame(width: 96, height: 96)
                 Text("Welcome to Nimble Photo")
                     .font(.largeTitle.weight(.semibold))
                 Text("A fast, keyboard-driven way to sort through large photo collections. Browse your folders, review photos at full size, and sort each one into a category with a single keystroke.")
@@ -280,13 +281,14 @@ struct EmptyRootStateView: View {
             }
             .frame(maxWidth: 360)
             .padding(20)
-            .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 12))
+            .background(Color.nimbleBlue.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
 
             if showButton {
                 Button("Select Root Folder to Start") {
                     rootFolderStore.presentPicker()
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(.nimbleBlue)
                 .controlSize(.large)
             }
 

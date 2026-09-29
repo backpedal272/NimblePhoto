@@ -15,17 +15,15 @@ struct FilterBarView: View {
         // Establishes an Observation dependency so chip labels refresh
         // immediately after a category rename in Settings.
         let _ = CategoryNamingTicker.shared.version
-        ControlGroup {
-            Button {
+        HStack(spacing: 4) {
+            FilterPill(isOn: appState.activeFilters.isEmpty) {
                 appState.showAll()
             } label: {
                 Text("All")
-                    .fontWeight(appState.activeFilters.isEmpty ? .semibold : .regular)
             }
 
             ForEach(Category.allCases) { category in
-                let isOn = appState.isFilterActive(category)
-                Button {
+                FilterPill(isOn: appState.activeFilters.contains(category)) {
                     appState.toggleFilter(category)
                 } label: {
                     HStack(spacing: 4) {
@@ -34,11 +32,37 @@ struct FilterBarView: View {
                             .frame(width: 8, height: 8)
                         Text(category.displayName)
                         Text("\(count(for: category))")
+                            .monospacedDigit()
                             .foregroundStyle(.secondary)
                     }
-                    .opacity(isOn ? 1.0 : 0.5)
                 }
             }
         }
+    }
+}
+
+/// A capsule toggle in the Nimble style: active pills are tinted with the
+/// accent at reduced opacity rather than gray (style guide §2).
+private struct FilterPill<Label: View>: View {
+    let isOn: Bool
+    let action: () -> Void
+    @ViewBuilder let label: Label
+
+    var body: some View {
+        Button(action: action) {
+            label
+                .font(.callout.weight(isOn ? .semibold : .regular))
+                .foregroundStyle(isOn ? Color.nimbleDeepBlue : Color.primary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule().fill(isOn ? Color.nimbleBlue.opacity(0.18) : Color.clear)
+                )
+                .overlay(
+                    Capsule().strokeBorder(isOn ? Color.nimbleBlue.opacity(0.6) : Color.clear, lineWidth: 1)
+                )
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 }
