@@ -2,9 +2,10 @@ import AppKit
 import SwiftUI
 
 /// Right-click menu shared by the thumbnail grid and the full-size viewer:
-/// one item per category, then "Show in Finder". `targets` are the photo
+/// one item per category, then "Copy All Text" and "Show in Finder". `targets` are the photo
 /// paths the menu acts on.
 struct PhotoContextMenu: View {
+    @Environment(AppState.self) private var appState
     let targets: [String]
     let onClassify: (Category, [String]) -> Void
 
@@ -17,6 +18,12 @@ struct PhotoContextMenu: View {
             }
         }
         Divider()
+        Button {
+            TextRecognitionService.copyAllText(from: targets, appState: appState)
+        } label: {
+            Label("Copy All Text", systemImage: "text.viewfinder")
+        }
+        .disabled(!TextRecognitionService.hasCopyableTarget(targets))
         Button {
             NSWorkspace.shared.activateFileViewerSelecting(targets.map { URL(fileURLWithPath: $0) })
         } label: {

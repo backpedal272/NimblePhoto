@@ -28,7 +28,7 @@ struct StatusBarView: View {
                 Label {
                     Text(message)
                 } icon: {
-                    Image(systemName: "exclamationmark.triangle.fill")
+                    Image(systemName: appState.statusSymbol ?? "exclamationmark.triangle.fill")
                         .foregroundStyle(Color.nimbleBlue)
                 }
                 .lineLimit(1)

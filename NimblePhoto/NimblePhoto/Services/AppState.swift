@@ -31,6 +31,8 @@ final class AppState {
     var isShowingFullSize = false
 
     var statusMessage: String?
+    /// SF Symbol shown with `statusMessage`; nil means the warning glyph.
+    var statusSymbol: String?
     private var statusClearTask: Task<Void, Never>?
 
     /// Collapses highlight, selection, and anchor onto a single photo
@@ -66,7 +68,14 @@ final class AppState {
     /// Errors are transient (spec §7.4): they replace the highlighted-photo
     /// info in the status bar for a few seconds, then it comes back.
     func showError(_ message: String) {
+        showStatus(message, symbol: nil)
+    }
+
+    /// Non-error status (e.g. progress or a confirmation), shown like an
+    /// error but with its own glyph.
+    func showStatus(_ message: String, symbol: String?) {
         statusMessage = message
+        statusSymbol = symbol
         statusClearTask?.cancel()
         statusClearTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(6))
