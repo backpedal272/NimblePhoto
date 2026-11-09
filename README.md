@@ -1,4 +1,4 @@
-# NimblePhoto
+# Nimble Photo
 
 **Cull thousands of photos on your Mac with one key per photo, without moving a single file.**
 
@@ -12,7 +12,7 @@ Open any folder, press a number key to sort each photo, then filter to see what'
 2. **Press a key.** `0` Delete · `1` Unclassified · `2` Keep · `3` Star · `4` Select
 3. **Filter.** Show one category at a time, with live counts.
 
-NimblePhoto never moves, renames, copies or deletes photos. Category names can be changed (for example "Star" to "Portfolio"), and the app updates the tags for you.
+Nimble Photo never moves, renames, copies or deletes photos. Category names can be changed (for example "Star" to "Portfolio"), and the app updates the tags for you.
 
 ## Features
 
@@ -32,7 +32,7 @@ NimblePhoto never moves, renames, copies or deletes photos. Category names can b
 
 ## Install
 
-NimblePhoto is in beta. [Join the beta on TestFlight](https://testflight.apple.com/join/kqkYP4Jw). It's free. More on [nimbleapps.ch](https://nimbleapps.ch/nimblephoto/index.html).
+Nimble Photo is in beta. [Join the beta on TestFlight](https://testflight.apple.com/join/kqkYP4Jw). It's free. More on [nimbleapps.ch](https://nimbleapps.ch/nimblephoto/index.html).
 
 ## Build from source
 
