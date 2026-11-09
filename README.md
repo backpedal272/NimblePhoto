@@ -30,6 +30,10 @@ NimblePhoto never moves, renames, copies or deletes photos. Category names can b
 
 - macOS 15 Sequoia or later
 
+## Install
+
+NimblePhoto is in beta. [Join the beta on TestFlight](https://testflight.apple.com/join/kqkYP4Jw). It's free. More on [nimbleapps.ch](https://nimbleapps.ch/nimblephoto/index.html).
+
 ## Build from source
 
 You need Xcode.
